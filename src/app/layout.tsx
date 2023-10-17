@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Toaster } from '@/components/ui/toaster'
+import Providers from './providers'
+import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +19,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={cn(inter.className)}>
+        <Providers>
+          <main className="flex items-center justify-center h-screen space-x-4">
+            {children}
+          </main>
+        </Providers>
+        <Toaster />
+      </body>
     </html>
   )
 }
