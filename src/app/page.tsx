@@ -1,14 +1,16 @@
 "use client";
 
-import { useAuthContext } from '@/context/AuthContext';
-import { redirect } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { signOut as firebaseSignOut } from '@/firebase/auth';
-import { Button } from '@/components/ui/button';
-import { ReloadIcon } from "@radix-ui/react-icons"
-import { useToast } from '@/components/ui/use-toast';
-import ModeToggle from '@/components/mode-toggle';
-import { Label } from '@/components/ui/label';
+import { useAuthContext } from "@/context/AuthContext";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { signOut as firebaseSignOut } from "@/firebase/auth";
+import { Button } from "@/components/ui/button";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { useToast } from "@/components/ui/use-toast";
+import ModeToggle from "@/components/mode-toggle";
+import { Label } from "@/components/ui/label";
+import { getToken } from "firebase/app-check";
+import { getAppCheck } from "@/firebase/app-check";
 
 export default function Home() {
   const { toast } = useToast();
@@ -17,10 +19,22 @@ export default function Home() {
 
   useEffect(() => {
     if (user == null) {
-      redirect('sign-in')
+      redirect("sign-in");
     }
   }, [user]);
 
+  const coppyAppCheckToken = async (force = false) => {
+    setIsLoading(true);
+
+    const appCheck = await getToken(getAppCheck(), false);
+    toast({
+      title: "Coppy app check token is successfully.",
+    });
+    console.log(appCheck.token);
+    navigator.clipboard.writeText(appCheck.token);
+
+    setIsLoading(false);
+  };
 
   const coppyAccessToken = async (force = false) => {
     setIsLoading(true);
@@ -28,33 +42,50 @@ export default function Home() {
     const accessToken = await user.getIdToken(force);
     toast({
       title: "Coppy access token is successfully.",
-    })
+    });
     console.log(accessToken);
     navigator.clipboard.writeText(accessToken);
 
     setIsLoading(false);
-  }
+  };
 
   const signOut = async () => {
     await firebaseSignOut();
-  }
+  };
 
   return (
-    <section className='flex flex-col space-y-5 items-center'>
+    <section className="flex flex-col space-y-5 items-center">
       <Label htmlFor="text">{user?.email}</Label>
 
-      <Button variant="outline" disabled={isLoading} onClick={() => coppyAccessToken()}>
+      <Button
+        variant="outline"
+        disabled={isLoading}
+        onClick={() => coppyAppCheckToken()}>
+        {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+        Copy app check token
+      </Button>
+
+      <Button
+        variant="outline"
+        disabled={isLoading}
+        onClick={() => coppyAccessToken()}>
         {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
         Copy access token
       </Button>
 
-      <Button variant="outline" disabled={isLoading} onClick={() => coppyAccessToken(true)}>
+      <Button
+        variant="outline"
+        disabled={isLoading}
+        onClick={() => coppyAccessToken(true)}>
         {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
         Force copy access token
       </Button>
 
-      <div className='flex flex-row space-x-2'>
-        <Button variant="outline" disabled={isLoading} onClick={() => signOut()}>
+      <div className="flex flex-row space-x-2">
+        <Button
+          variant="outline"
+          disabled={isLoading}
+          onClick={() => signOut()}>
           {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
           Sign Out
         </Button>
@@ -62,5 +93,5 @@ export default function Home() {
         <ModeToggle />
       </div>
     </section>
-  )
+  );
 }
